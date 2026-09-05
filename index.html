@@ -28,6 +28,62 @@ footer{background:#041d38;color:#d9e6f3;padding:45px 5% 20px}.footgrid{display:g
 @media(max-width:900px){nav ul{display:none}.hero{grid-template-columns:1fr}.hero h1{font-size:45px}.grid,.feature-grid,.material-grid{grid-template-columns:repeat(2,1fr)}.footgrid{grid-template-columns:1fr 1fr}.top{display:none}}
 @media(max-width:550px){section{padding:40px 5%}.grid,.feature-grid,.material-grid{grid-template-columns:1fr}.hero{padding:45px 5%}.hero h1{font-size:39px}.cta{margin:0 5% 40px;padding:28px 22px;display:block}.cta .btn{margin-top:15px}.footgrid{grid-template-columns:1fr}}
 </style>
+
+<!-- Firebase Authentication -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGjf6_Bmp8BtDn-qQ3e4B4Nkh77VxpuDw",
+    authDomain: "conceptera-e41ab.firebaseapp.com",
+    projectId: "conceptera-e41ab",
+    storageBucket: "conceptera-e41ab.firebasestorage.app",
+    messagingSenderId: "584720805436",
+    appId: "1:584720805436:web:9ce2f751f0f916c0291d39",
+    measurementId: "G-CN65950N5D"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.openLogin = () => document.getElementById('loginModal').style.display = 'flex';
+  window.closeLogin = () => document.getElementById('loginModal').style.display = 'none';
+
+  window.loginAdmin = async (event) => {
+    event.preventDefault();
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value;
+    const msg = document.getElementById('loginMsg');
+    msg.textContent = 'Logging in...';
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      msg.textContent = 'Login successful!';
+      closeLogin();
+    } catch (error) {
+      msg.textContent = 'Login failed. Email/password check karo.';
+    }
+  };
+
+  window.logoutAdmin = async () => {
+    await signOut(auth);
+  };
+
+  onAuthStateChanged(auth, (user) => {
+    const dashboard = document.getElementById('adminDashboard');
+    const loginBtn = document.getElementById('loginBtn');
+    if (user) {
+      dashboard.style.display = 'block';
+      loginBtn.textContent = 'Admin Dashboard';
+      loginBtn.onclick = () => dashboard.scrollIntoView({behavior:'smooth'});
+      document.getElementById('adminUserEmail').textContent = user.email || '';
+    } else {
+      dashboard.style.display = 'none';
+      loginBtn.textContent = 'Login';
+      loginBtn.onclick = openLogin;
+    }
+  });
+</script>
 </head>
 <body>
 <div class="top"><span>Learn Better • Achieve More</span><span>📧 support@conceptera.in &nbsp; | &nbsp; 📱 +91 98765 43210</span></div>
@@ -35,7 +91,7 @@ footer{background:#041d38;color:#d9e6f3;padding:45px 5% 20px}.footgrid{display:g
 <nav>
   <a class="logo" href="#"><span>🎓</span><div>Concept<span style="color:#ff7a00">Era</span><small>Learn Better, Achieve More</small></div></a>
   <ul><li><a href="#home">Home</a></li><li><a href="#courses">Courses</a></li><li><a href="#material">Study Material</a></li><li><a href="#about">About</a></li><li><a href="#contact">Contact</a></li></ul>
-  <div><a class="btn outline" href="#login">Login</a> <a class="btn primary" href="#courses">Join Now</a></div>
+  <div><a id="loginBtn" class="btn outline" href="javascript:void(0)" onclick="openLogin()">Login</a> <a class="btn primary" href="#courses">Join Now</a></div>
 </nav>
 
 <main id="home">
@@ -93,6 +149,41 @@ footer{background:#041d38;color:#d9e6f3;padding:45px 5% 20px}.footgrid{display:g
 <div class="cta" id="contact"><div><h2>Ready to Start Your Learning Journey?</h2><p>Join ConceptEra and take the first step towards your goal.</p></div><a class="btn primary" href="mailto:support@conceptera.in">Join Now →</a></div>
 </main>
 
+
+<!-- Admin Login -->
+<div id="loginModal" style="display:none;position:fixed;inset:0;background:#0008;z-index:100;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;width:min(420px,100%);border-radius:18px;padding:28px;box-shadow:0 20px 60px #0005;position:relative">
+    <button onclick="closeLogin()" style="position:absolute;right:14px;top:10px;border:0;background:none;font-size:28px;cursor:pointer">×</button>
+    <h2 style="color:#062c52;margin-bottom:6px">ConceptEra Admin Login</h2>
+    <p style="color:#607089;margin-bottom:20px">Use the email and password you created in Firebase.</p>
+    <form onsubmit="loginAdmin(event)">
+      <label style="display:block;font-weight:700;margin:10px 0 6px">Email</label>
+      <input id="adminEmail" type="email" required placeholder="Your email" style="width:100%;padding:13px;border:1px solid #ccd8e5;border-radius:9px">
+      <label style="display:block;font-weight:700;margin:14px 0 6px">Password</label>
+      <input id="adminPassword" type="password" required placeholder="Your password" style="width:100%;padding:13px;border:1px solid #ccd8e5;border-radius:9px">
+      <button class="btn primary" type="submit" style="width:100%;margin-top:18px">Login</button>
+      <p id="loginMsg" style="margin-top:12px;text-align:center;color:#607089"></p>
+    </form>
+  </div>
+</div>
+
+<!-- Temporary Admin Dashboard -->
+<section id="adminDashboard" style="display:none;background:#f5f9ff;padding:40px 5%">
+  <div style="max-width:1000px;margin:auto;background:#fff;border:1px solid #dbe5f1;border-radius:18px;padding:28px;box-shadow:0 8px 25px #173a5d12">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap">
+      <div><h2 style="color:#062c52">ConceptEra Admin Dashboard</h2><p style="color:#607089">Logged in as <b id="adminUserEmail"></b></p></div>
+      <button class="btn outline" onclick="logoutAdmin()">Logout</button>
+    </div>
+    <hr style="margin:22px 0;border:0;border-top:1px solid #e5edf5">
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+      <div class="material"><span>📚</span>Courses</div>
+      <div class="material"><span>📄</span>Study Material</div>
+      <div class="material"><span>📝</span>Tests</div>
+      <div class="material"><span>👨‍🎓</span>Students</div>
+    </div>
+    <p style="margin-top:20px;color:#607089">Next step: we can add secure admin-only controls for courses, PDFs, tests and students.</p>
+  </div>
+</section>
 <footer>
  <div class="footgrid">
   <div><h2 style="color:#fff">Concept<span style="color:#ff7a00">Era</span></h2><p>An online learning platform for school boards, competitive exams and beyond.</p></div>
